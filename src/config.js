@@ -6,4 +6,5 @@ export const config = {
   port: process.env.PORT || 3000,
   domain: process.env.RENDER_EXTERNAL_URL || '',
   isWebhook: !!process.env.RENDER_EXTERNAL_URL,
+  chatId: process.env.CHAT_ID || '',
 }

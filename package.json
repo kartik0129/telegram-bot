@@ -9,6 +9,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "yahoo-finance2": "^4.0.0"
   }
 }
