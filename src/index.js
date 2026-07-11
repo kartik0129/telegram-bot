@@ -5,6 +5,7 @@ import { startHandler } from './handlers/start.js'
 import { helpHandler } from './handlers/help.js'
 import { etfHandler, getEtfData } from './handlers/etf.js'
 import { dailydevHandler, fetchDailyDev } from './handlers/dailydev.js'
+import { addSubscriber, removeSubscriber, getAllSubscribers, isSubscribed } from './store.js'
 
 const bot = new Telegraf(config.botToken)
 
@@ -13,6 +14,16 @@ bot.help(helpHandler)
 bot.command('info', (ctx) => ctx.reply('A simple Node.js Telegram bot using Telegraf.'))
 bot.command('etf', etfHandler)
 bot.command('dailydev', dailydevHandler)
+
+bot.command('subscribe', (ctx) => {
+  addSubscriber(ctx.chat.id)
+  ctx.reply('✅ You are now subscribed to the daily morning briefing!')
+})
+
+bot.command('unsubscribe', (ctx) => {
+  removeSubscriber(ctx.chat.id)
+  ctx.reply('❌ You have been unsubscribed from the daily briefing.')
+})
 
 bot.command('morning', async (ctx) => {
   await ctx.reply('☀️ Preparing your morning briefing...')
@@ -77,12 +88,22 @@ if (config.isWebhook) {
   app.get('/cron/daily', async (req, res) => {
     try {
       const message = await sendDailyBriefing()
-      if (config.chatId) {
-        await bot.telegram.sendMessage(config.chatId, message, { parse_mode: 'Markdown' })
-        res.send('Daily briefing sent')
-      } else {
-        res.send('CHAT_ID not configured — set it to receive daily briefings')
+      const subscribers = getAllSubscribers()
+      if (subscribers.length === 0) {
+        res.send('No subscribers yet. Ask users to send /subscribe')
+        return
       }
+      let sent = 0
+      let failed = 0
+      for (const chatId of subscribers) {
+        try {
+          await bot.telegram.sendMessage(chatId, message, { parse_mode: 'Markdown' })
+          sent++
+        } catch {
+          failed++
+        }
+      }
+      res.send(`Briefing sent to ${sent} subscriber(s)${failed ? ` (${failed} failed)` : ''}`)
     } catch (err) {
       console.error('Cron error:', err)
       res.status(500).send('Failed to send briefing')
