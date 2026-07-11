@@ -1,4 +1,4 @@
-const DAILY_GRAPHQL = 'https://app.daily.dev/api/graphql'
+const DAILY_GRAPHQL = 'https://api.daily.dev/graphql'
 
 const query = `
   query AnonymousFeed($first: Int, $ranking: Ranking, $version: Int) {
